@@ -1,0 +1,22 @@
+import java.util.Date;
+
+public class PagamentoCartaoCredito  extends Pagamento {
+    private int numeroParcelas;
+
+    public PagamentoCartaoCredito(String id, float valor, Date dataPagamento, int numeroParcelas) {
+        super(id, valor, dataPagamento);
+        this.numeroParcelas = numeroParcelas;
+    }
+
+    @Override
+    public float efetuarPagamento(float valor) {
+        // TODO Auto-generated method stub
+        return super.efetuarPagamento(valor);
+    }
+
+    @Override
+    public boolean verificarPagamento() {
+        // TODO Auto-generated method stub
+        return super.verificarPagamento();
+    }
+}
