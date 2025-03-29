@@ -3,14 +3,13 @@ public class Livro {
     private String titulo;
     private String autor;
     private int anoPublicacao;
-    private float valorAluguel;
     
-    public Livro(String id, String titulo, String autor, int anoPublicacao, float valorAluguel) {
+    public Livro(String id, String titulo, String autor, int anoPublicacao) {
         this.id = id;
         this.titulo = titulo;
         this.autor = autor;
         this.anoPublicacao = anoPublicacao;
-        this.valorAluguel = valorAluguel;
+       
     }
     
     public String getId() {
@@ -29,7 +28,4 @@ public class Livro {
         return anoPublicacao;
     }
     
-    public float getValorAluguel() {
-        return valorAluguel;
-    }
 }

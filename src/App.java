@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class App {
     private static List<Usuario> usuarios = new ArrayList<>();
@@ -11,18 +12,21 @@ public class App {
     private static List<Aluguel> alugueis = new ArrayList<>();
     private static Scanner scanner = new Scanner(System.in);
     private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    private static final float MULTA_POR_DIA = 2.0f; // R$ 2,00 por dia de atraso
 
     public static void main(String[] args) throws Exception {
         int opcao = 0;
         
-        while (opcao != 6) {
+        while (opcao != 8) {
             System.out.println("\n===== SISTEMA DE BIBLIOTECA =====");
             System.out.println("1. Criar Usuário");
-            System.out.println("2. Adicionar Livro");
-            System.out.println("3. Remover Livro");
-            System.out.println("4. Realizar Aluguel");
-            System.out.println("5. Realizar Pagamento");
-            System.out.println("6. Sair");
+            System.out.println("2. Remover Usuário");
+            System.out.println("3. Adicionar Livro");
+            System.out.println("4. Remover Livro");
+            System.out.println("5. Realizar Aluguel");
+            System.out.println("6. Devolver Livro");
+            System.out.println("7. Realizar Pagamento");
+            System.out.println("8. Sair");
             System.out.print("Escolha uma opção: ");
             
             try {
@@ -33,18 +37,24 @@ public class App {
                         criarUsuario();
                         break;
                     case 2:
-                        adicionarLivro();
+                        removerUsuario();
                         break;
                     case 3:
-                        removerLivro();
+                        adicionarLivro();
                         break;
                     case 4:
-                        realizarAluguel();
+                        removerLivro();
                         break;
                     case 5:
-                        realizarPagamento();
+                        realizarAluguel();
                         break;
                     case 6:
+                        devolverLivro();
+                        break;
+                    case 7:
+                        realizarPagamento();
+                        break;
+                    case 8:
                         System.out.println("Saindo do sistema...");
                         break;
                     default:
@@ -97,6 +107,58 @@ public class App {
         }
     }
     
+    private static void removerUsuario() {
+        System.out.println("\n===== REMOVER USUÁRIO =====");
+        
+        if (usuarios.isEmpty()) {
+            System.out.println("Não há usuários cadastrados!");
+            return;
+        }
+        
+        System.out.println("Usuários disponíveis:");
+        for (int i = 0; i < usuarios.size(); i++) {
+            Usuario usuario = usuarios.get(i);
+            String tipo = usuario instanceof Locatario ? "Locatário" : "Funcionário";
+            System.out.println((i+1) + ". " + usuario.getNome() + " (" + tipo + " - ID: " + usuario.getId() + ")");
+        }
+        
+        System.out.print("Digite o número do usuário a remover: ");
+        int index = Integer.parseInt(scanner.nextLine()) - 1;
+        
+        if (index >= 0 && index < usuarios.size()) {
+            Usuario usuarioRemovido = usuarios.get(index);
+            
+            // Verificar se o usuário possui aluguéis pendentes (caso seja um Locatário)
+            if (usuarioRemovido instanceof Locatario) {
+                boolean temAluguelPendente = false;
+                for (Aluguel aluguel : alugueis) {
+                    // Se encontrarmos pelo menos um aluguel sem data de devolução, significa que está pendente
+                    if (aluguel.getDataDevolucao() == null) {
+                        temAluguelPendente = true;
+                        break;
+                    }
+                }
+                
+                if (temAluguelPendente) {
+                    System.out.println("Este locatário possui aluguéis pendentes. Não é possível removê-lo.");
+                    return;
+                }
+                
+                // Verificar se o locatário possui saldo devedor
+                Locatario locatario = (Locatario) usuarioRemovido;
+                if (locatario.getSaldoDevedor() > 0) {
+                    System.out.println("Este locatário possui saldo devedor de R$" + locatario.getSaldoDevedor() + ". Não é possível removê-lo.");
+                    return;
+                }
+            }
+            
+            usuarios.remove(index);
+            System.out.println("Usuário '" + usuarioRemovido.getNome() + "' removido com sucesso!");
+        } else {
+            System.out.println("Número inválido!");
+        }
+    }
+    
     private static void adicionarLivro() {
         System.out.println("\n===== ADICIONAR LIVRO =====");
         System.out.print("ID: ");
@@ -111,10 +173,7 @@ public class App {
         System.out.print("Ano: ");
         int ano = Integer.parseInt(scanner.nextLine());
         
-        System.out.print("Valor de Aluguel: ");
-        float valorAluguel = Float.parseFloat(scanner.nextLine());
-        
-        Livro livro = new Livro(id, titulo, autor, ano, valorAluguel);
+        Livro livro = new Livro(id, titulo, autor, ano);
         livros.add(livro);
         
         System.out.println("Livro adicionado com sucesso!");
@@ -212,8 +271,6 @@ public class App {
             Aluguel aluguel = new Aluguel(idAluguel, prazo, dataLocacao, null, livro);
             alugueis.add(aluguel);
             
-            atualizarSaldoDevedor(locatario, -livro.getValorAluguel());
-            
             System.out.println("Aluguel realizado com sucesso!");
             System.out.println("Saldo devedor atualizado: R$" + locatario.getSaldoDevedor());
             
@@ -222,7 +279,97 @@ public class App {
         }
     }
     
+    private static void devolverLivro() {
+        System.out.println("\n===== DEVOLVER LIVRO =====");
+        
+        // Filtrar apenas aluguéis pendentes (sem data de devolução)
+        List<Aluguel> aluguelPendentes = new ArrayList<>();
+        for (Aluguel aluguel : alugueis) {
+            if (aluguel.getDataDevolucao() == null) {
+                aluguelPendentes.add(aluguel);
+            }
+        }
+        
+        if (aluguelPendentes.isEmpty()) {
+            System.out.println("Não há livros pendentes de devolução!");
+            return;
+        }
+        
+        // Mostrar os aluguéis pendentes
+        System.out.println("Livros pendentes de devolução:");
+        for (int i = 0; i < aluguelPendentes.size(); i++) {
+            Aluguel aluguel = aluguelPendentes.get(i);
+            System.out.println((i+1) + ". " + aluguel.getLivro().getTitulo() + 
+                               " (Alugado em: " + sdf.format(aluguel.getDataLocacao()) + 
+                               ", Prazo: " + aluguel.getPrazo() + " dias)");
+        }
+        
+        System.out.print("Escolha o número do livro a devolver: ");
+        int index = Integer.parseInt(scanner.nextLine()) - 1;
+        
+        if (index < 0 || index >= aluguelPendentes.size()) {
+            System.out.println("Número inválido!");
+            return;
+        }
+        
+        Aluguel aluguel = aluguelPendentes.get(index);
+        
+        // Data de devolução
+        System.out.print("Data de devolução (dd/MM/yyyy): ");
+        String dataStr = scanner.nextLine();
+        
+        try {
+            Date dataDevolucao = sdf.parse(dataStr);
+            
+            // Verificar se o prazo foi respeitado
+            long diffEmMilissegundos = dataDevolucao.getTime() - aluguel.getDataLocacao().getTime();
+            long diffEmDias = TimeUnit.DAYS.convert(diffEmMilissegundos, TimeUnit.MILLISECONDS);
+            int prazoEmDias = Integer.parseInt(aluguel.getPrazo());
+            
+            // Atualizar o aluguel com a data de devolução
+            for (int i = 0; i < alugueis.size(); i++) {
+                if (alugueis.get(i).getId().equals(aluguel.getId())) {
+                    alugueis.get(i).setDataDevolucao(dataDevolucao);
+                    break;
+                }
+            }
+            
+            System.out.println("Livro '" + aluguel.getLivro().getTitulo() + "' devolvido com sucesso!");
+            
+            // Verificar se o prazo foi excedido
+            if (diffEmDias > prazoEmDias) {
+                long diasAtraso = diffEmDias - prazoEmDias;
+                float valorMulta = diasAtraso * MULTA_POR_DIA;
+                
+                System.out.println("ATENÇÃO: Prazo excedido em " + diasAtraso + " dias!");
+                System.out.println("Valor da multa: R$" + valorMulta);
+                
+                // Identificar o locatário e atualizar o saldo devedor
+                for (Usuario usuario : usuarios) {
+                    if (usuario instanceof Locatario) {
+                        Locatario locatario = (Locatario) usuario;
+                        
+                        // Adicionando valor da multa ao saldo devedor
+                        float novoSaldo = locatario.getSaldoDevedor() + valorMulta;
+                        atualizarSaldoDevedor(locatario, -valorMulta); // Negativo porque estamos aumentando a dívida
+                        
+                        System.out.println("Saldo devedor atual do locatário " + locatario.getNome() + ": R$" + novoSaldo);
+                        break;
+                    }
+                }
+            } else {
+                System.out.println("Livro devolvido dentro do prazo!");
+            }
+            
+        } catch (ParseException e) {
+            System.out.println("Formato de data inválido!");
+        } catch (NumberFormatException e) {
+            System.out.println("Prazo inválido!");
+        }
+    }
+    
     private static void realizarPagamento() {
+        System.out.println("\n===== REALIZAR PAGAMENTO =====");
 
         if (alugueis.isEmpty()) {
             System.out.println("Não há aluguéis registrados para pagamento!");
@@ -304,7 +451,8 @@ public class App {
     }
     
     private static void atualizarSaldoDevedor(Locatario locatario, float valor) {
-
+        // Para aumentar o saldo devedor, passar valor negativo
+        // Para diminuir o saldo devedor, passar valor positivo
         float novoSaldo = locatario.getSaldoDevedor() - valor;
         if (novoSaldo < 0) {
             novoSaldo = 0;
