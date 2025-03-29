@@ -3,13 +3,14 @@ public class Livro {
     private String titulo;
     private String autor;
     private int anoPublicacao;
+    private boolean disponivel;
     
     public Livro(String id, String titulo, String autor, int anoPublicacao) {
         this.id = id;
         this.titulo = titulo;
         this.autor = autor;
         this.anoPublicacao = anoPublicacao;
-       
+        this.disponivel = true; 
     }
     
     public String getId() {
@@ -28,4 +29,11 @@ public class Livro {
         return anoPublicacao;
     }
     
+    public boolean isDisponivel() {
+        return disponivel;
+    }
+    
+    public void setDisponivel(boolean disponivel) {
+        this.disponivel = disponivel;
+    }
 }

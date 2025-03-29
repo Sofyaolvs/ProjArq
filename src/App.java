@@ -12,7 +12,7 @@ public class App {
     private static List<Aluguel> alugueis = new ArrayList<>();
     private static Scanner scanner = new Scanner(System.in);
     private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-    private static final float MULTA_POR_DIA = 2.0f; // R$ 2,00 por dia de atraso
+    private static final float MULTA_POR_DIA = 2.0f;
 
     public static void main(String[] args) throws Exception {
         int opcao = 0;
@@ -128,11 +128,10 @@ public class App {
         if (index >= 0 && index < usuarios.size()) {
             Usuario usuarioRemovido = usuarios.get(index);
             
-            // Verificar se o usuário possui aluguéis pendentes (caso seja um Locatário)
+
             if (usuarioRemovido instanceof Locatario) {
                 boolean temAluguelPendente = false;
                 for (Aluguel aluguel : alugueis) {
-                    // Se encontrarmos pelo menos um aluguel sem data de devolução, significa que está pendente
                     if (aluguel.getDataDevolucao() == null) {
                         temAluguelPendente = true;
                         break;
@@ -144,7 +143,6 @@ public class App {
                     return;
                 }
                 
-                // Verificar se o locatário possui saldo devedor
                 Locatario locatario = (Locatario) usuarioRemovido;
                 if (locatario.getSaldoDevedor() > 0) {
                     System.out.println("Este locatário possui saldo devedor de R$" + locatario.getSaldoDevedor() + ". Não é possível removê-lo.");
@@ -190,14 +188,30 @@ public class App {
         System.out.println("Livros disponíveis:");
         for (int i = 0; i < livros.size(); i++) {
             Livro livro = livros.get(i);
-            System.out.println((i+1) + ". " + livro.getTitulo() + " (ID: " + livro.getId() + ")");
+            String disponibilidade = livro.isDisponivel() ? "Disponível" : "Indisponível";
+            System.out.println((i+1) + ". " + livro.getTitulo() + " (ID: " + livro.getId() + ") - " + disponibilidade);
         }
         
         System.out.print("Digite o número do livro a remover: ");
         int index = Integer.parseInt(scanner.nextLine()) - 1;
         
         if (index >= 0 && index < livros.size()) {
-            Livro livroRemovido = livros.remove(index);
+            Livro livroRemovido = livros.get(index);
+
+            boolean livroEmUso = false;
+            for (Aluguel aluguel : alugueis) {
+                if (aluguel.getLivro().getId().equals(livroRemovido.getId()) && aluguel.getDataDevolucao() == null) {
+                    livroEmUso = true;
+                    break;
+                }
+            }
+            
+            if (livroEmUso) {
+                System.out.println("Este livro está atualmente alugado. Não é possível removê-lo.");
+                return;
+            }
+            
+            livros.remove(index);
             System.out.println("Livro '" + livroRemovido.getTitulo() + "' removido com sucesso!");
         } else {
             System.out.println("Número inválido!");
@@ -219,8 +233,15 @@ public class App {
             return;
         }
 
-        if (livros.isEmpty()) {
-            System.out.println("Não há livros cadastrados!");
+        List<Livro> livrosDisponiveis = new ArrayList<>();
+        for (Livro livro : livros) {
+            if (livro.isDisponivel()) {
+                livrosDisponiveis.add(livro);
+            }
+        }
+        
+        if (livrosDisponiveis.isEmpty()) {
+            System.out.println("Não há livros disponíveis para aluguel!");
             return;
         }
         
@@ -241,21 +262,21 @@ public class App {
         
         Locatario locatario = locatarios.get(locatarioIndex);
 
-        System.out.println("Livros disponíveis:");
-        for (int i = 0; i < livros.size(); i++) {
-            Livro livro = livros.get(i);
+        System.out.println("Livros disponíveis para aluguel:");
+        for (int i = 0; i < livrosDisponiveis.size(); i++) {
+            Livro livro = livrosDisponiveis.get(i);
             System.out.println((i+1) + ". " + livro.getTitulo() + " (ID: " + livro.getId() + ")");
         }
         
         System.out.print("Escolha o número do livro: ");
         int livroIndex = Integer.parseInt(scanner.nextLine()) - 1;
         
-        if (livroIndex < 0 || livroIndex >= livros.size()) {
+        if (livroIndex < 0 || livroIndex >= livrosDisponiveis.size()) {
             System.out.println("Livro inválido!");
             return;
         }
         
-        Livro livro = livros.get(livroIndex);
+        Livro livro = livrosDisponiveis.get(livroIndex);
 
         System.out.print("Prazo de devolução (em dias): ");
         String prazo = scanner.nextLine();
@@ -270,8 +291,16 @@ public class App {
             
             Aluguel aluguel = new Aluguel(idAluguel, prazo, dataLocacao, null, livro);
             alugueis.add(aluguel);
+
+            for (int i = 0; i < livros.size(); i++) {
+                if (livros.get(i).getId().equals(livro.getId())) {
+                    livros.get(i).setDisponivel(false);
+                    break;
+                }
+            }
             
             System.out.println("Aluguel realizado com sucesso!");
+            System.out.println("Livro '" + livro.getTitulo() + "' marcado como indisponível.");
             System.out.println("Saldo devedor atualizado: R$" + locatario.getSaldoDevedor());
             
         } catch (ParseException e) {
@@ -281,8 +310,7 @@ public class App {
     
     private static void devolverLivro() {
         System.out.println("\n===== DEVOLVER LIVRO =====");
-        
-        // Filtrar apenas aluguéis pendentes (sem data de devolução)
+
         List<Aluguel> aluguelPendentes = new ArrayList<>();
         for (Aluguel aluguel : alugueis) {
             if (aluguel.getDataDevolucao() == null) {
@@ -295,7 +323,6 @@ public class App {
             return;
         }
         
-        // Mostrar os aluguéis pendentes
         System.out.println("Livros pendentes de devolução:");
         for (int i = 0; i < aluguelPendentes.size(); i++) {
             Aluguel aluguel = aluguelPendentes.get(i);
@@ -314,29 +341,33 @@ public class App {
         
         Aluguel aluguel = aluguelPendentes.get(index);
         
-        // Data de devolução
         System.out.print("Data de devolução (dd/MM/yyyy): ");
         String dataStr = scanner.nextLine();
         
         try {
             Date dataDevolucao = sdf.parse(dataStr);
-            
-            // Verificar se o prazo foi respeitado
+
             long diffEmMilissegundos = dataDevolucao.getTime() - aluguel.getDataLocacao().getTime();
             long diffEmDias = TimeUnit.DAYS.convert(diffEmMilissegundos, TimeUnit.MILLISECONDS);
             int prazoEmDias = Integer.parseInt(aluguel.getPrazo());
-            
-            // Atualizar o aluguel com a data de devolução
+
             for (int i = 0; i < alugueis.size(); i++) {
                 if (alugueis.get(i).getId().equals(aluguel.getId())) {
                     alugueis.get(i).setDataDevolucao(dataDevolucao);
                     break;
                 }
             }
+        
+            for (int i = 0; i < livros.size(); i++) {
+                if (livros.get(i).getId().equals(aluguel.getLivro().getId())) {
+                    livros.get(i).setDisponivel(true);
+                    break;
+                }
+            }
             
             System.out.println("Livro '" + aluguel.getLivro().getTitulo() + "' devolvido com sucesso!");
+            System.out.println("Livro marcado como disponível novamente.");
             
-            // Verificar se o prazo foi excedido
             if (diffEmDias > prazoEmDias) {
                 long diasAtraso = diffEmDias - prazoEmDias;
                 float valorMulta = diasAtraso * MULTA_POR_DIA;
@@ -344,14 +375,12 @@ public class App {
                 System.out.println("ATENÇÃO: Prazo excedido em " + diasAtraso + " dias!");
                 System.out.println("Valor da multa: R$" + valorMulta);
                 
-                // Identificar o locatário e atualizar o saldo devedor
                 for (Usuario usuario : usuarios) {
                     if (usuario instanceof Locatario) {
                         Locatario locatario = (Locatario) usuario;
-                        
-                        // Adicionando valor da multa ao saldo devedor
+                    
                         float novoSaldo = locatario.getSaldoDevedor() + valorMulta;
-                        atualizarSaldoDevedor(locatario, -valorMulta); // Negativo porque estamos aumentando a dívida
+                        atualizarSaldoDevedor(locatario, -valorMulta);
                         
                         System.out.println("Saldo devedor atual do locatário " + locatario.getNome() + ": R$" + novoSaldo);
                         break;
@@ -451,8 +480,6 @@ public class App {
     }
     
     private static void atualizarSaldoDevedor(Locatario locatario, float valor) {
-        // Para aumentar o saldo devedor, passar valor negativo
-        // Para diminuir o saldo devedor, passar valor positivo
         float novoSaldo = locatario.getSaldoDevedor() - valor;
         if (novoSaldo < 0) {
             novoSaldo = 0;
