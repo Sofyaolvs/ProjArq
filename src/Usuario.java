@@ -17,5 +17,23 @@ public class Usuario {
         // Implementar lógica de verificação de inadimplência
         return false; // Exemplo: retorna false por padrão
     }
+    // Adicione estes métodos à classe Usuario.java existente
+    public String getNome() {
+        return nome;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+
+    public String getId() {
+        return id;
+    }
+    
     
 }

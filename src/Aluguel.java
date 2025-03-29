@@ -15,4 +15,36 @@ public class Aluguel {
         this.livro = livro;
     }    
     
+    public String getId() {
+        return id;
+    }
+    
+    public String getPrazo() {
+        return prazo;
+    }
+    
+    public Date getDataLocacao() {
+        return dataLocacao;
+    }
+    
+    public Date getDataDevolucao() {
+        return dataDevolucao;
+    }
+    
+    public Livro getLivro() {
+        return livro;
+    }
+    
+    public void setDataDevolucao(Date dataDevolucao) {
+        this.dataDevolucao = dataDevolucao;
+    }
+    // Adicione estes métodos à classe Aluguel.java existente:
+
+    public Pagamento getPagamento() {
+        return pagamento;
+    }
+
+    public void setPagamento(Pagamento pagamento) {
+        this.pagamento = pagamento;
+    }
 }

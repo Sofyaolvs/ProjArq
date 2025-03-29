@@ -12,5 +12,8 @@ public class Funcionario extends Usuario{
     public float getSalario() {
         return salario;
     }
-
+// Adicione este método à classe Funcionario.java existente
+    public String getCargo() {
+        return cargo;
+    }
 }

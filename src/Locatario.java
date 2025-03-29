@@ -3,9 +3,16 @@ public class Locatario extends Usuario {
 
     public Locatario(String id, String nome, String email, String telefone, float saldoDevedor, float saldoDevedor2) {
         super(id, nome, email, telefone, saldoDevedor);
-        saldoDevedor = saldoDevedor2;
+        this.saldoDevedor = saldoDevedor2;
     }
+    
     public float getSaldoDevedor() {
         return saldoDevedor;
+    }
+    
+    @Override
+    public boolean verificarInadiplencia() {
+        // Considera inadimplente se o saldo devedor for acima de um limite
+        return saldoDevedor > 100;
     }
 }
