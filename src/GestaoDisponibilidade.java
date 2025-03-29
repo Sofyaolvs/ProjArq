@@ -1,10 +1,8 @@
-public class GestaoDisponibilidade extends Livro{
+public class GestaoDisponibilidade{
     private Livro livro;
 
     
-    public GestaoDisponibilidade(String id, String titulo, String autor, int anoPublicacao, float valorAluguel,
-            Livro livro) {
-        super(id, titulo, autor, anoPublicacao, valorAluguel);
+    public GestaoDisponibilidade(Livro livro) {
         this.livro = livro;
     }
     public boolean verificarDisponibilidade(String idLivro){

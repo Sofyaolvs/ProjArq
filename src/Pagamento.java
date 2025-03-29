@@ -3,7 +3,7 @@ import java.util.Date;
 public class Pagamento {
     private String id;
     private float valor;
-    private String status; // "Pendente", "Concluído", "Cancelado", etc.
+    private String status; 
     private Date dataPagamento;
     
     public Pagamento(String id, float valor) {
@@ -16,19 +16,16 @@ public class Pagamento {
         //TODO Auto-generated constructor stub
     }
 
-    // Método abstrato que será implementado de forma diferente por cada subclasse
+  
     public  boolean processar(){
-        // Lógica de processamento de pagamento genérica
-        // Isso pode ser sobrescrito nas subclasses
+
         System.out.println("Processando pagamento genérico...");
-        
-        // Simulação de processamento bem-sucedido
+
         this.status = "Concluído";
         this.dataPagamento = new Date();
         return true;
     }
-    
-    // Método para confirmação de pagamento
+
     public boolean confirmarPagamento() {
         if (this.status.equals("Pendente")) {
             this.status = "Concluído";
@@ -37,8 +34,7 @@ public class Pagamento {
         }
         return false;
     }
-    
-    // Método para cancelar pagamento
+
     public boolean cancelarPagamento() {
         if (!this.status.equals("Concluído")) {
             this.status = "Cancelado";
@@ -46,8 +42,7 @@ public class Pagamento {
         }
         return false;
     }
-    
-    // Getters e setters
+
     public String getId() {
         return id;
     }

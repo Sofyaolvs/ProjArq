@@ -128,7 +128,6 @@ public class App {
             return;
         }
         
-        // Exibir livros disponíveis
         System.out.println("Livros disponíveis:");
         for (int i = 0; i < livros.size(); i++) {
             Livro livro = livros.get(i);
@@ -149,7 +148,6 @@ public class App {
     private static void realizarAluguel() {
         System.out.println("\n===== REALIZAR ALUGUEL =====");
         
-        // Verificar se existem locatários
         List<Locatario> locatarios = new ArrayList<>();
         for (Usuario usuario : usuarios) {
             if (usuario instanceof Locatario) {
@@ -161,8 +159,7 @@ public class App {
             System.out.println("Não há locatários cadastrados!");
             return;
         }
-        
-        // Verificar se existem livros
+
         if (livros.isEmpty()) {
             System.out.println("Não há livros cadastrados!");
             return;
@@ -184,8 +181,7 @@ public class App {
         }
         
         Locatario locatario = locatarios.get(locatarioIndex);
-        
-        // Selecionar livro
+
         System.out.println("Livros disponíveis:");
         for (int i = 0; i < livros.size(); i++) {
             Livro livro = livros.get(i);
@@ -201,8 +197,7 @@ public class App {
         }
         
         Livro livro = livros.get(livroIndex);
-        
-        // Informações adicionais do aluguel
+
         System.out.print("Prazo de devolução (em dias): ");
         String prazo = scanner.nextLine();
         
@@ -212,14 +207,11 @@ public class App {
         try {
             Date dataLocacao = sdf.parse(dataStr);
             
-            // Gerar ID para o aluguel
             String idAluguel = "ALG" + System.currentTimeMillis();
             
-            // Criar aluguel
             Aluguel aluguel = new Aluguel(idAluguel, prazo, dataLocacao, null, livro);
             alugueis.add(aluguel);
             
-            // Atualizar saldo devedor do locatário
             atualizarSaldoDevedor(locatario, -livro.getValorAluguel());
             
             System.out.println("Aluguel realizado com sucesso!");
@@ -231,15 +223,12 @@ public class App {
     }
     
     private static void realizarPagamento() {
-        System.out.println("\n===== REALIZAR PAGAMENTO =====");
-        
-        // Verificar se existem aluguéis pendentes
+
         if (alugueis.isEmpty()) {
             System.out.println("Não há aluguéis registrados para pagamento!");
             return;
         }
-        
-        // Listar aluguéis sem pagamento
+
         System.out.println("Aluguéis disponíveis para pagamento:");
         List<Aluguel> alugueisDisponiveis = new ArrayList<>();
         for (Aluguel aluguel : alugueis) {
@@ -265,8 +254,7 @@ public class App {
         }
         
         Aluguel aluguel = alugueisDisponiveis.get(aluguelIndex);
-        
-        // Buscar o locatário
+  
         Locatario locatario = null;
         for (Usuario usuario : usuarios) {
             if (usuario instanceof Locatario) {
@@ -293,22 +281,18 @@ public class App {
         
         try {
             Date dataPagamento = sdf.parse(dataStr);
-            
-            // Gerar ID para o pagamento
+
             String idPagamento = "PAG" + System.currentTimeMillis();
-            
-            // Criar pagamento
+
             Pagamento pagamento = new Pagamento(idPagamento, valor, dataPagamento, locatario);
-            
-            // Associar pagamento ao aluguel
+
             for (int i = 0; i < alugueis.size(); i++) {
                 if (alugueis.get(i).getId().equals(aluguel.getId())) {
                     alugueis.get(i).setPagamento(pagamento);
                     break;
                 }
             }
-            
-            // Atualizar saldo devedor
+
             atualizarSaldoDevedor(locatario, valor);
             
             System.out.println("Pagamento realizado com sucesso!");
@@ -320,14 +304,12 @@ public class App {
     }
     
     private static void atualizarSaldoDevedor(Locatario locatario, float valor) {
-        // Valor positivo = pagamento (diminui saldo)
-        // Valor negativo = aluguel (aumenta saldo)
+
         float novoSaldo = locatario.getSaldoDevedor() - valor;
         if (novoSaldo < 0) {
             novoSaldo = 0;
         }
-        
-        // Atualizar o objeto Locatario na lista
+
         for (int i = 0; i < usuarios.size(); i++) {
             if (usuarios.get(i).getId().equals(locatario.getId())) {
                 usuarios.set(i, new Locatario(

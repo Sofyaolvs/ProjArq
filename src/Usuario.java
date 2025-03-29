@@ -14,10 +14,9 @@ public class Usuario {
 
 
     public boolean verificarInadiplencia() {
-        // Implementar lógica de verificação de inadimplência
-        return false; // Exemplo: retorna false por padrão
+        return false; 
     }
-    // Adicione estes métodos à classe Usuario.java existente
+    
     public String getNome() {
         return nome;
     }

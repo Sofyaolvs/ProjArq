@@ -12,7 +12,7 @@ public class Locatario extends Usuario {
     
     @Override
     public boolean verificarInadiplencia() {
-        // Considera inadimplente se o saldo devedor for acima de um limite
+
         return saldoDevedor > 100;
     }
 }

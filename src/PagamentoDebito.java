@@ -15,11 +15,10 @@ public class PagamentoDebito extends Pagamento {
     
     @Override
     public boolean processar() {
-        // Lógica específica para processar pagamento via débito
         System.out.println("Processando pagamento via cartão de débito: " + 
                           numeroCartao.substring(numeroCartao.length() - 4));
         
-        // Simulação de verificação de saldo
+
         boolean temSaldo = verificarSaldo();
         
         if (temSaldo) {
@@ -31,9 +30,7 @@ public class PagamentoDebito extends Pagamento {
     }
     
     private boolean verificarSaldo() {
-        // Simulação de verificação de saldo
-        // Em um sistema real, esta verificação seria feita com a integração bancária
-        return Math.random() > 0.1; // 90% de chance de ter saldo
+        return Math.random() > 0.1; 
     }
     
     // Getters

@@ -38,7 +38,6 @@ public class Aluguel {
     public void setDataDevolucao(Date dataDevolucao) {
         this.dataDevolucao = dataDevolucao;
     }
-    // Adicione estes métodos à classe Aluguel.java existente:
 
     public Pagamento getPagamento() {
         return pagamento;

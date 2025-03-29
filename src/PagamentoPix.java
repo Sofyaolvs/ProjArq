@@ -9,11 +9,9 @@ public class PagamentoPix extends Pagamento {
     
     @Override
     public boolean processar() {
-        // Lógica específica para processar pagamento via Pix
-        // Por exemplo, gerar QR Code, verificar recebimento, etc.
+
         System.out.println("Processando pagamento via PIX para a chave: " + chavePix);
         
-        // Simulação de processamento bem-sucedido
         this.comprovante = "PIX-" + getId() + "-" + System.currentTimeMillis();
         return confirmarPagamento();
     }
